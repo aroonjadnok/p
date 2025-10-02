@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ผู้ช่วยงานพัสดุโรงเรียน (ปรับปรุง)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .tab-button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .tab-button.active {
+            border-bottom: 4px solid #059669; /* Emerald 600 */
+            color: #059669;
+            font-weight: 600;
+        }
+        .tab-pane {
+            transition: opacity 0.4s ease-in-out;
+        }
+        .main-card {
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom style for responsive buttons */
+        .action-button {
+            @apply px-4 py-2 rounded-lg font-medium transition duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        /* Styles for input warnings */
+        .input-warning {
+            border-color: #ef4444 !important; /* Red 500 */
+            box-shadow: 0 0 0 1px #fca5a5; /* Red 300 */
+        }
+        .input-holiday-warning {
+            border-color: #f59e0b !important; /* Amber 500 */
+            box-shadow: 0 0 0 1px #fcd34d; /* Amber 300 */
+        }
+        /* Style for Toast/Modal Notification */
+        #toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 90%;
+            min-width: 300px;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        #toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-2">ผู้ช่วยงานพัสดุโรงเรียน</h1>
+            <p id="tab-description" class="text-lg text-gray-500 min-h-[1.5em] transition duration-300">ผู้เชี่ยวชาญด้านระเบียบการเงินการคลังของรัฐ พ.ศ. 2562 และงานพัสดุในสถานศึกษา</p>
+        </header>
+
+        <main class="bg-white rounded-xl main-card overflow-hidden">
+            <!-- Tab Navigation (Accessibility Improved) -->
+            <nav class="flex border-b border-gray-200 overflow-x-auto">
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-600 whitespace-nowrap" data-tab="qa" tabindex="0">1. ถาม-ตอบ ระเบียบพัสดุ</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-600 whitespace-nowrap" data-tab="formal" tabindex="0">2. ปรับภาษาเป็นทางการ</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-600 whitespace-nowrap" data-tab="justify" tabindex="0">3. สร้างเหตุผลการจัดซื้อ/จ้าง</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-600 whitespace-nowrap" data-tab="tor" tabindex="0">4. สร้าง TOR</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-600 whitespace-nowrap" data-tab="date" tabindex="0">5. คู่มือการลงวันที่</button>
+            </nav>
+
+            <!-- Tab Content -->
+            <div id="tab-content" class="p-6 md:p-8">
+
+                <!-- 1. ถาม-ตอบ ระเบียบพัสดุ (Default) -->
+                <div id="qa-tab" class="tab-pane">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">1. ถาม-ตอบ ระเบียบพัสดุ (อ้างอิงระเบียบ พ.ศ. 2562)</h2>
+                    <textarea id="qa-input" class="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-gray-700" placeholder="ตัวอย่าง: การจัดซื้อพัสดุวงเงิน 5,000 บาท ต้องใช้วิธีใด และอ้างอิงระเบียบข้อใด"></textarea>
+                    <button id="qa-submit" class="w-full bg-emerald-600 text-white py-3 mt-4 rounded-lg hover:bg-emerald-700 transition duration-200 font-bold shadow-md">
+                        <span id="qa-button-text">ส่งคำถามและรับคำปรึกษา</span>
+                    </button>
+                </div>
+
+                <!-- 2. ปรับภาษาเป็นทางการ -->
+                <div id="formal-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">2. ปรับภาษาเป็นทางการ (สำหรับเอกสารราชการ)</h2>
+                    <p class="text-gray-500 mb-4">ใส่ข้อความที่คุณต้องการปรับเป็นภาษาราชการ (เช่น บันทึกคร่าวๆ, รายงานปากเปล่า)</p>
+                    <textarea id="formal-input" class="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-gray-700" placeholder="ตัวอย่าง: คอมพิวเตอร์เสีย ใช้งานไม่ได้มาหลายเดือนแล้ว ต้องซื้อเครื่องใหม่มาให้ครูใช้สอนนักเรียนให้ทันเทอมหน้า"></textarea>
+                    <button id="formal-submit" class="w-full bg-emerald-600 text-white py-3 mt-4 rounded-lg hover:bg-emerald-700 transition duration-200 font-bold shadow-md">
+                        <span id="formal-button-text">ปรับแต่งข้อความเป็นทางการ</span>
+                    </button>
+                </div>
+
+                <!-- 3. สร้างเหตุผลการจัดซื้อ/จ้าง (With Real-time Validation & Template) -->
+                <div id="justify-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">3. สร้างเหตุผลความจำเป็นในการจัดซื้อจัดจ้าง</h2>
+                    <div class="flex justify-end mb-4">
+                        <button id="justify-template" class="action-button bg-gray-100 text-gray-600 text-sm hover:bg-gray-200 focus:ring-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                            ตัวอย่าง (Template)
+                        </button>
+                    </div>
+                    <div class="space-y-4 text-gray-700">
+                        <div>
+                            <label for="justify-problem" class="block font-medium mb-1">สภาพปัญหา/ความจำเป็น:</label>
+                            <input type="text" id="justify-problem" class="justify-input w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: เครื่องถ่ายเอกสารเก่าชำรุดบ่อย ไม่สามารถซ่อมได้">
+                        </div>
+                        <div>
+                            <label for="justify-effect" class="block font-medium mb-1">ผลกระทบที่เกิดขึ้น:</label>
+                            <input type="text" id="justify-effect" class="justify-input w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: งานสารบรรณล่าช้า กระทบต่อการบริการ">
+                        </div>
+                        <div>
+                            <label for="justify-item" class="block font-medium mb-1">รายการที่ต้องการจัดซื้อ/จ้าง:</label>
+                            <input type="text" id="justify-item" class="justify-input w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: เครื่องถ่ายเอกสารระบบดิจิทัลความเร็วสูง 1 เครื่อง">
+                        </div>
+                        <div>
+                            <label for="justify-objective" class="block font-medium mb-1">วัตถุประสงค์ของการดำเนินการ:</label>
+                            <input type="text" id="justify-objective" class="justify-input w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: เพื่อเพิ่มประสิทธิภาพและความรวดเร็วในการปฏิบัติงาน">
+                        </div>
+                        <div>
+                            <label for="justify-benefit" class="block font-medium mb-1">ประโยชน์ที่คาดว่าจะได้รับ:</label>
+                            <input type="text" id="justify-benefit" class="justify-input w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: ประหยัดงบซ่อมบำรุงและเพิ่มความคล่องตัว">
+                        </div>
+                    </div>
+                    <button id="justify-submit" class="w-full bg-emerald-600 text-white py-3 mt-6 rounded-lg hover:bg-emerald-700 transition duration-200 font-bold shadow-md">
+                        <span id="justify-button-text">สร้างเหตุผลความจำเป็น</span>
+                    </button>
+                </div>
+
+                <!-- 4. สร้าง TOR (With Template) -->
+                <div id="tor-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">4. สร้างขอบเขตของงาน (TOR) ที่ครบถ้วน</h2>
+                    <div class="flex justify-end mb-4">
+                        <button id="tor-template" class="action-button bg-gray-100 text-gray-600 text-sm hover:bg-gray-200 focus:ring-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v4m-4 10h-2m-8 0h2m0 0a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+                            ตัวอย่าง (Template)
+                        </button>
+                    </div>
+                    <p class="text-gray-500 mb-4">ระบุรายละเอียดหลักเพื่อสร้าง TOR ที่ถูกต้องตามระเบียบ</p>
+                    <div class="space-y-4 text-gray-700">
+                        <div>
+                            <label for="tor-type" class="block font-medium mb-1">ประเภท TOR:</label>
+                            <select id="tor-type" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                                <option value="purchase">จัดซื้อ (Purchase)</option>
+                                <option value="hire">จ้างงาน/บริการ (Hire)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tor-name" class="block font-medium mb-1">ชื่อโครงการ/รายการ (ระบุให้ชัดเจน):</label>
+                            <input type="text" id="tor-name" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: จัดซื้อเครื่องคอมพิวเตอร์แบบตั้งโต๊ะ 10 ชุด">
+                        </div>
+                        <div>
+                            <label for="tor-detail" class="block font-medium mb-1">รายละเอียดทางเทคนิค/ขอบเขตงานคร่าวๆ:</label>
+                            <textarea id="tor-detail" class="w-full h-24 p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: CPU Core i5, RAM 16GB, จอ 24 นิ้ว หรือ ขอบเขตงานจ้างเหมาทำความสะอาดอาคารเรียน 3 เดือน"></textarea>
+                        </div>
+                        <div>
+                            <label for="tor-quantity" class="block font-medium mb-1">ปริมาณ/จำนวนที่ต้องการ:</label>
+                            <input type="text" id="tor-quantity" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น: จำนวน 10 ชุด หรือ ระยะเวลา 60 วัน">
+                        </div>
+                    </div>
+                    <button id="tor-submit" class="w-full bg-emerald-600 text-white py-3 mt-6 rounded-lg hover:bg-emerald-700 transition duration-200 font-bold shadow-md">
+                        <span id="tor-button-text">สร้าง TOR ฉบับสมบูรณ์</span>
+                    </button>
+                </div>
+                
+                <!-- 5. แนะนำเรื่องการลงวันที่ในเอกสารพัสดุ (With Real-time Date Warning) -->
+                <div id="date-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">5. คู่มือการลงวันที่ (พร้อมตรวจสอบวันหยุด/ความสอดคล้อง)</h2>
+                    <p class="text-gray-500 mb-4">รับคำแนะนำเกี่ยวกับลำดับความถูกต้องของวันที่ในเอกสารพัสดุหลัก</p>
+                    <div class="space-y-4 text-gray-700">
+                        <div>
+                            <label for="date-order" class="block font-medium mb-1">วันที่อนุมัติจัดซื้อจัดจ้าง (ห้ามเป็นวันหยุด):</label>
+                            <input type="date" id="date-order" class="date-input w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label for="date-bill" class="block font-medium mb-1">วันที่ในบิล/ใบเสร็จ (หลักฐานการรับรองหนี้):</label>
+                            <input type="date" id="date-bill" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label for="date-receive" class="block font-medium mb-1">วันที่ตรวจรับพัสดุ (ห้ามก่อนวันที่บิล):</label>
+                            <input type="date" id="date-receive" class="date-input w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                        </div>
+                    </div>
+                    <button id="date-submit" class="w-full bg-emerald-600 text-white py-3 mt-6 rounded-lg hover:bg-emerald-700 transition duration-200 font-bold shadow-md">
+                        <span id="date-button-text">ตรวจสอบความสอดคล้องของวันที่</span>
+                    </button>
+                    <p class="text-sm text-red-600 mt-3 font-semibold p-3 bg-red-50 rounded-lg border border-red-200">
+                        ⚠️ **ข้อจำกัดสำคัญ:** การตรวจสอบวันหยุดนักขัตฤกษ์ อ้างอิงจากรายการที่กำหนดเอง (Hardcoded) สำหรับปี **2568 (2025)** เท่านั้น
+                        หากใช้งานในปีอื่น หรือต้องการความแม่นยำสูงสุด โปรดตรวจสอบกับปฏิทินราชการล่าสุดและอัปเดตโค้ด
+                    </p>
+                </div>
+
+
+                <!-- Output Section -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">ผลลัพธ์จากผู้ช่วยงานพัสดุ</h2>
+                    
+                    <!-- Output Box -->
+                    <div id="output-box-container" class="relative">
+                        <div id="output-box" class="min-h-[150px] p-4 bg-gray-100 border border-gray-300 rounded-lg text-gray-800 whitespace-pre-wrap leading-relaxed shadow-inner">
+                            <p class="text-gray-500">เลือกเมนูและใส่ข้อมูลเพื่อเริ่มต้นการใช้งาน</p>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div id="output-actions" class="mt-3 flex space-x-3 justify-end hidden">
+                            <button id="copy-button" class="action-button bg-gray-200 text-gray-700 hover:bg-gray-300 focus:ring-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v4m-4 10h-2m-8 0h2m0 0a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+                                คัดลอก
+                            </button>
+                            <button id="download-button" class="action-button bg-emerald-100 text-emerald-700 hover:bg-emerald-200 focus:ring-emerald-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                ดาวน์โหลด (.txt)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="loading-indicator" class="hidden text-center mt-4">
+                        <div class="inline-block animate-spin rounded-full h-6 w-6 border-4 border-t-4 border-emerald-500 border-t-transparent"></div>
+                        <p class="text-emerald-600 mt-2">กำลังประมวลผลตามระเบียบ... โปรดรอสักครู่</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+    
+    <!-- Toast/Modal Notification (for errors and success messages) -->
+    <div id="toast-notification" class="hidden rounded-lg shadow-xl bg-red-600 p-4 text-white font-semibold">
+        <div id="toast-message"></div>
+    </div>
+
+
+    <script>
+        // API Configuration
+        const apiKey = ""; // Platform environment will inject the key
+        const MODEL_NAME = "gemini-2.5-flash-preview-05-20";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
+        
+        // System Instruction (Unchanged, focusing on the persona)
+        const SYSTEM_INSTRUCTION = `
+            คุณคือผู้ช่วยงานพัสดุโรงเรียนที่มีความเชี่ยวชาญในระเบียบการเงินการคลังของรัฐ พ.ศ. 2562 และระเบียบที่เกี่ยวข้องทั้งหมด รวมถึงคู่มือการปฏิบัติงานพัสดุในสถานศึกษา หน้าที่ของคุณคือการช่วยเหลือผู้ใช้ใน 5 ประเด็นหลักดังนี้:
+
+            1. ตอบคำถามพัสดุ (QA): ตอบคำถามเกี่ยวกับระเบียบ ขั้นตอน แนวปฏิบัติ โดยต้องอ้างอิงระเบียบ/กฎหมายที่เกี่ยวข้อง (เช่น ระเบียบฯ พ.ศ. 2562 ข้อ...) อย่างชัดเจน หากไม่แน่ใจให้แนะนำผู้ใช้ให้ตรวจสอบกับหน่วยงานที่เกี่ยวข้อง
+            2. ปรับภาษาเป็นทางการ (Formal): ปรับข้อความที่ผู้ใช้ให้มาให้เป็นภาษาราชการที่ถูกต้องตามหลักภาษาไทย สุภาพ และเป็นทางการ เหมาะสำหรับเอกสารราชการ
+            3. เขียนสาเหตุการซื้อ/จ้าง (Justify): สร้างเหตุผลความจำเป็นในการจัดซื้อจัดจ้างที่ชัดเจน สมเหตุสมผล สอดคล้องกับภารกิจโรงเรียน โดยใช้รูปแบบ: 'เนื่องจาก [สภาพปัญหา/ความจำเป็น] ส่งผลให้ [ผลกระทบต่อการเรียนการสอน/การปฏิบัติงาน] โรงเรียนจึงมีความจำเป็นต้อง [จัดซื้อ/จัดจ้าง] [รายการ] เพื่อ [วัตถุประสงค์] ซึ่งจะส่งผลให้ [ประโยชน์ที่คาดว่าจะได้รับ]'
+            4. สร้าง TOR: สร้างขอบเขตของงาน (Terms of Reference) ที่ครบถ้วนตามรายการที่กำหนดสำหรับการจัดซื้อหรือการจ้างงาน และระบุว่าเป็นการจัดซื้อหรือจ้าง
+            5. แนะนำการลงวันที่ (Date): ให้คำแนะนำที่ถูกต้องเกี่ยวกับลำดับความสอดคล้องของวันที่ในเอกสารพัสดุ (วันที่อนุมัติ, วันที่ในบิล/ใบเสร็จ, วันที่ตรวจรับ) และแจ้งเตือนหากมีความไม่สอดคล้อง โดยต้องพิจารณาประเด็นเรื่องวันหยุด (เสาร์-อาทิตย์/นักขัตฤกษ์) ที่ระบุในข้อมูลนำเข้าด้วย หากพบข้อความสำคัญที่ควรเน้น (เช่น วันที่ไม่ถูกต้อง, ข้อผิดพลาดตามระเบียบ) ให้ใช้เครื่องหมาย **เน้นข้อความ** เพื่อให้ผู้ใช้มองเห็นได้ง่าย
+
+            ต้องปฏิบัติตามระเบียบอย่างเคร่งครัด โปร่งใส และรักษาผลประโยชน์ของทางราชการเสมอ
+        `;
+
+        // UI Element References
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        const outputBox = document.getElementById('output-box');
+        const outputActions = document.getElementById('output-actions');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const tabDescription = document.getElementById('tab-description');
+        const toastNotification = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const copyButton = document.getElementById('copy-button');
+        const downloadButton = document.getElementById('download-button');
+        
+        // Hardcoded list of Thai Public Holidays for 2025 (STATIC - cannot be dynamic in single HTML file)
+        const THAI_HOLIDAYS = [
+            '2025-01-01', '2025-02-12', 
+            '2025-04-07', '2025-04-13', '2025-04-14', '2025-04-15', 
+            '2025-05-05', '2025-05-12', '2025-06-03', 
+            '2025-07-11', '2025-07-14', '2025-07-28', 
+            '2025-08-12', '2025-10-13', '2025-10-23', 
+            '2025-12-05', '2025-12-10', '2025-12-31'
+        ];
+
+        // --- Utility Functions ---
+
+        // 1. Debounce Utility
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // 2. Date Utility Functions
+        function createDate(dateString) {
+            // Parses the date string as UTC to prevent local timezone offsets
+            return new Date(dateString + 'T00:00:00Z');
+        }
+
+        function isWeekend(date) {
+            const dayOfWeek = date.getUTCDay(); // 0 = Sunday, 6 = Saturday
+            return dayOfWeek === 0 || dayOfWeek === 6;
+        }
+
+        function isPublicHoliday(date) {
+            const dateOnly = date.toISOString().substring(0, 10);
+            return THAI_HOLIDAYS.includes(dateOnly);
+        }
+
+        function isWorkingDay(date) {
+            // Checks if date is a valid date string and not a non-working day
+            if (isNaN(date.getTime())) return true; // If input is empty/invalid, assume working day check is bypassed
+            return !isWeekend(date) && !isPublicHoliday(date);
+        }
+
+        function getThaiDateString(date) {
+            return date.toLocaleDateString('th-TH', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                weekday: 'long',
+                timeZone: 'UTC'
+            });
+        }
+        
+        // 3. UI/State Functions
+        const TAB_DESCRIPTIONS = {
+            'qa': 'ผู้เชี่ยวชาญด้านระเบียบการเงินการคลังของรัฐ พ.ศ. 2562 และงานพัสดุในสถานศึกษา',
+            'formal': 'แปลงภาษาพูดหรือภาษาคร่าวๆ ให้เป็นภาษาราชการที่ถูกต้องและสุภาพสำหรับเอกสารบันทึกข้อความ',
+            'justify': 'สร้างเหตุผลความจำเป็นในการจัดซื้อจัดจ้างที่ชัดเจนและสอดคล้องกับระเบียบ',
+            'tor': 'สร้างขอบเขตของงาน (Terms of Reference) ฉบับร่างที่ครบถ้วนและเป็นไปตามหลักการ',
+            'date': 'ตรวจสอบลำดับความถูกต้องของวันที่สำคัญในเอกสารพัสดุ และแจ้งเตือนวันหยุดทำการ',
+        };
+
+        function changeTab(tabName) {
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.add('hidden'));
+
+            const activeTab = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+            const activePane = document.getElementById(`${tabName}-tab`);
+
+            if (activeTab) activeTab.classList.add('active');
+            if (activePane) activePane.classList.remove('hidden');
+
+            // Update Tab Description
+            tabDescription.textContent = TAB_DESCRIPTIONS[tabName] || TAB_DESCRIPTIONS['qa'];
+
+            // Save state to localStorage
+            localStorage.setItem('activeTab', tabName);
+            
+            // Reset output and validation states
+            outputBox.innerHTML = '<p class="text-gray-500">เลือกเมนูและใส่ข้อมูลเพื่อเริ่มต้นการใช้งาน</p>';
+            outputBox.classList.remove('bg-red-100', 'border-red-300');
+            outputActions.classList.add('hidden');
+            document.querySelectorAll('.input-warning').forEach(el => el.classList.remove('input-warning'));
+            document.querySelectorAll('.input-holiday-warning').forEach(el => el.classList.remove('input-holiday-warning'));
+            hideToast();
+        }
+
+        function showToast(message, type = 'error') {
+            toastMessage.textContent = message;
+            toastNotification.classList.remove('bg-red-600', 'bg-green-600', 'bg-amber-500', 'hidden');
+            
+            if (type === 'error') {
+                toastNotification.classList.add('bg-red-600');
+            } else if (type === 'success') {
+                toastNotification.classList.add('bg-green-600');
+            } else if (type === 'warning') {
+                toastNotification.classList.add('bg-amber-500');
+            }
+            
+            toastNotification.classList.add('show');
+            
+            setTimeout(() => {
+                hideToast();
+            }, 5000);
+        }
+
+        function hideToast() {
+            toastNotification.classList.remove('show');
+            setTimeout(() => {
+                 toastNotification.classList.add('hidden');
+            }, 300);
+        }
+
+        function setOutput(content, isError = false) {
+            outputBox.innerHTML = content;
+            hideToast();
+            
+            if (isError) {
+                outputBox.classList.add('bg-red-100', 'border-red-300', 'text-red-800');
+                outputActions.classList.add('hidden');
+                showToast(content.replace(/<[^>]*>?/gm, '').split(':')[1].trim(), 'error'); // Extract message without tags
+            } else {
+                outputBox.classList.remove('bg-red-100', 'border-red-300', 'text-red-800');
+                outputActions.classList.remove('hidden');
+            }
+        }
+        
+        // 4. Copy/Download Functions
+        function copyToClipboard() {
+            const textToCopy = outputBox.innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyButton.textContent = 'คัดลอกสำเร็จ!';
+                    showToast('คัดลอกผลลัพธ์ไปยังคลิปบอร์ดแล้ว', 'success');
+                    setTimeout(() => { copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v4m-4 10h-2m-8 0h2m0 0a2 2 0 002 2h2a2 2 0 002-2"/></svg>คัดลอก'; }, 2000);
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                    showToast('ไม่สามารถคัดลอกข้อความได้ (โปรดลองคัดลอกด้วยตนเอง)', 'error');
+                });
+            } else {
+                showToast('เบราว์เซอร์ของคุณไม่รองรับการคัดลอกอัตโนมัติ กรุณาคัดลอกด้วยตนเอง', 'warning');
+            }
+        }
+
+        function downloadTxt() {
+            const textToDownload = outputBox.innerText;
+            const currentTabName = document.querySelector('.tab-button.active').textContent.split('.')[1].trim();
+            const filename = `ผลลัพธ์_${currentTabName}_${new Date().toISOString().substring(0, 10)}.txt`;
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textToDownload));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        // 5. Template Filling Functions
+        function fillJustifyTemplate() {
+            document.getElementById('justify-problem').value = 'เครื่องปรับอากาศในห้องเรียนชำรุดและมีอายุการใช้งานนานเกินกว่า 10 ปี ทำให้ประสิทธิภาพการทำความเย็นลดลง';
+            document.getElementById('justify-effect').value = 'ส่งผลให้การเรียนการสอนในห้องเรียนไม่สะดวกสบาย และกระทบต่อสมาธิของนักเรียนและครูผู้สอน';
+            document.getElementById('justify-item').value = 'เครื่องปรับอากาศขนาด 18,000 BTU แบบประหยัดไฟเบอร์ 5 จำนวน 1 เครื่อง';
+            document.getElementById('justify-objective').value = 'เพื่อทดแทนเครื่องเก่าที่ชำรุด และเพิ่มประสิทธิภาพการจัดการเรียนรู้ให้สอดคล้องกับสภาพอากาศ';
+            document.getElementById('justify-benefit').value = 'นักเรียนและครูได้รับสภาพแวดล้อมที่เหมาะสมกับการเรียนรู้ ประหยัดพลังงานไฟฟ้าในระยะยาว';
+            validateJustifyForm(true); // Run validation/warning check
+        }
+
+        function fillTorTemplate() {
+            document.getElementById('tor-type').value = 'purchase';
+            document.getElementById('tor-name').value = 'จัดซื้อแท็บเล็ตเพื่อการศึกษาสำหรับนักเรียนชั้นประถมศึกษาปีที่ 4';
+            document.getElementById('tor-detail').value = 'แท็บเล็ตขนาด 10.1 นิ้ว, RAM 4GB, ROM 64GB, รองรับ 4G, พร้อมปากกาสไตลัส, รับประกัน 2 ปี';
+            document.getElementById('tor-quantity').value = 'จำนวน 30 เครื่อง';
+        }
+
+        // 6. Validation and Input Handling
+        function validateJustifyForm(isSubmitting = false) {
+            const inputs = document.querySelectorAll('.justify-input');
+            let isValid = true;
+            let firstEmpty = null;
+            
+            inputs.forEach(input => {
+                if (input.value.trim() === '') {
+                    input.classList.add('input-warning');
+                    isValid = false;
+                    if (isSubmitting && !firstEmpty) {
+                        firstEmpty = input;
+                    }
+                } else {
+                    input.classList.remove('input-warning');
+                }
+            });
+
+            if (isSubmitting && firstEmpty) {
+                firstEmpty.focus();
+            }
+            return isValid;
+        }
+
+        function handleDateInputChange(event) {
+            const dateInput = event.target;
+            const dateString = dateInput.value;
+            
+            if (dateString) {
+                const date = createDate(dateString);
+                if (!isWorkingDay(date)) {
+                    dateInput.classList.add('input-holiday-warning');
+                } else {
+                    dateInput.classList.remove('input-holiday-warning');
+                }
+            } else {
+                 dateInput.classList.remove('input-holiday-warning');
+            }
+        }
+
+        // --- Main API Caller ---
+        async function callGeminiAPI(userQuery, buttonId) {
+            const spanElement = document.getElementById(buttonId);
+            const buttonElement = spanElement.parentElement;
+            const originalButtonText = spanElement.textContent;
+
+            // 1. Set Loading State
+            setOutput('<p class="text-gray-500">กำลังส่งคำร้องและประมวลผลข้อมูล...</p>');
+            loadingIndicator.classList.remove('hidden');
+            buttonElement.disabled = true;
+            spanElement.textContent = 'กำลังประมวลผล...';
+            outputActions.classList.add('hidden');
+            hideToast(); // Hide toast if currently visible
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+                config: { temperature: 0.3 },
+                tools: [{ "google_search": {} }],
+            };
+
+            let result = null;
+            let success = false;
+            let retries = 0;
+            const MAX_RETRIES = 3;
+
+            while (retries < MAX_RETRIES && !success) {
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.status === 429) { // Rate limit or quota
+                        throw new Error(`Quota Exceeded (429).`);
+                    }
+                    if (!response.ok) {
+                        const errorBody = await response.text();
+                        console.error(`API Error: status ${response.status}.`, errorBody);
+                        throw new Error(`API returned non-OK status: ${response.status}`);
+                    }
+
+                    result = await response.json();
+                    success = true;
+
+                } catch (error) {
+                    console.error(`Attempt ${retries + 1} failed:`, error.message);
+                    retries++;
+                    if (retries < MAX_RETRIES) {
+                        const delay = Math.pow(2, retries) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            
+            // 2. Clear Loading State
+            loadingIndicator.classList.add('hidden');
+            buttonElement.disabled = false;
+            spanElement.textContent = originalButtonText;
+
+            // 3. Display Result
+            if (!success || !result || !result.candidates || result.candidates.length === 0 || !result.candidates[0].content || !result.candidates[0].content.parts || result.candidates[0].content.parts.length === 0) {
+                const errorContent = `
+                    <span class="font-bold">⚠️ การประมวลผลล้มเหลว:</span> 
+                    ไม่สามารถสร้างคำตอบได้หลังจากพยายาม ${MAX_RETRIES} ครั้ง 
+                    สาเหตุอาจเกิดจากปัญหาการเชื่อมต่อ, ข้อจำกัดโควต้า API, หรือคำถามที่ซับซ้อนเกินไป 
+                    กรุณาลองใหม่อีกครั้งในภายหลัง
+                `;
+                setOutput(errorContent, true);
+                return;
+            }
+            
+            // For security, although LLM response should be clean, we ensure it's displayed as text
+            const responseText = result.candidates[0].content.parts[0].text;
+            
+            // Simple replacement for bold formatting if model uses ** or __
+            const formattedText = responseText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                              .replace(/__(.*?)__/g, '<strong>$1</strong>');
+            
+            setOutput(formattedText, false);
+        }
+
+        // --- Submit Logic (Debounced) ---
+        const submitQueryDebounced = debounce(submitQuery, 500);
+
+        function submitQuery(mode) {
+            let userQuery = '';
+            let buttonId = mode + '-button-text';
+            let validationMessage = '';
+
+            // 1. Data Collection and Validation
+            switch (mode) {
+                case 'qa':
+                    const qaInput = document.getElementById('qa-input').value.trim();
+                    if (!qaInput) validationMessage = 'กรุณาใส่คำถามเกี่ยวกับงานพัสดุที่ต้องการสอบถาม';
+                    userQuery = `คำถามระเบียบพัสดุ: ${qaInput}`;
+                    break;
+
+                case 'formal':
+                    const formalInput = document.getElementById('formal-input').value.trim();
+                    if (!formalInput) validationMessage = 'กรุณาใส่ข้อความคร่าวๆ ที่ต้องการปรับเป็นทางการ';
+                    userQuery = `ปรับปรุงข้อความต่อไปนี้ให้เป็นภาษาราชการอย่างสมบูรณ์: "${formalInput}"`;
+                    break;
+
+                case 'justify':
+                    if (!validateJustifyForm(true)) {
+                        validationMessage = 'กรุณากรอกข้อมูลให้ครบถ้วนทุกช่องเพื่อสร้างเหตุผลความจำเป็น (ช่องสีแดงยังว่าง)';
+                    }
+                    const problem = document.getElementById('justify-problem').value.trim();
+                    const effect = document.getElementById('justify-effect').value.trim();
+                    const item = document.getElementById('justify-item').value.trim();
+                    const objective = document.getElementById('justify-objective').value.trim();
+                    const benefit = document.getElementById('justify-benefit').value.trim();
+                    
+                    if (validationMessage) break;
+                    userQuery = `สร้างเหตุผลความจำเป็นในการจัดซื้อจัดจ้างตามข้อมูลนี้: สภาพปัญหา=${problem}, ผลกระทบ=${effect}, รายการ=${item}, วัตถุประสงค์=${objective}, ประโยชน์=${benefit}`;
+                    break;
+                
+                case 'tor':
+                    const torType = document.getElementById('tor-type').value;
+                    const torName = document.getElementById('tor-name').value.trim();
+                    const torDetail = document.getElementById('tor-detail').value.trim();
+                    const torQuantity = document.getElementById('tor-quantity').value.trim();
+
+                    if (!torName || !torDetail || !torQuantity) {
+                        validationMessage = 'กรุณากรอก ชื่อโครงการ/รายการ, รายละเอียด/ขอบเขต และ ปริมาณ/จำนวน ให้ครบถ้วน';
+                    }
+
+                    const torModeText = torType === 'purchase' ? 'จัดซื้อ' : 'จ้างงาน';
+                    userQuery = `สร้างขอบเขตของงาน (TOR) สำหรับการ${torModeText} โดยมีข้อมูลดังนี้: ชื่อโครงการ/รายการ: ${torName}, รายละเอียด/ขอบเขตงาน: ${torDetail}, ปริมาณ/จำนวน: ${torQuantity}. ต้องสร้างหัวข้อ TOR ให้ครบถ้วนตามระเบียบที่เกี่ยวข้องกับการ${torModeText} เท่านั้น`;
+                    break;
+
+                case 'date':
+                    const dateOrderInput = document.getElementById('date-order').value;
+                    const dateBillInput = document.getElementById('date-bill').value;
+                    const dateReceiveInput = document.getElementById('date-receive').value;
+
+                    if (!dateOrderInput || !dateBillInput || !dateReceiveInput) {
+                        validationMessage = 'กรุณากรอกวันที่ให้ครบถ้วนทั้ง 3 ช่อง เพื่อรับการตรวจสอบความสอดคล้อง';
+                        break;
+                    }
+
+                    // Strict Date Consistency Check (before sending to AI)
+                    const dOrder = createDate(dateOrderInput);
+                    const dBill = createDate(dateBillInput);
+                    const dReceive = createDate(dateReceiveInput);
+                    let localCheckWarnings = [];
+
+                    // Check 1: Bill Date must not be before Approval Date
+                    if (dBill < dOrder) {
+                        localCheckWarnings.push(`⛔ วันที่ในบิล/ใบเสร็จ (${getThaiDateString(dBill)}) **ไม่ควรอยู่ก่อน** วันที่อนุมัติ (${getThaiDateString(dOrder)}) ตามหลักการแล้ว ห้ามก่อหนี้ก่อนการอนุมัติ`);
+                    }
+
+                    // Check 2: Receive Date must not be before Bill Date
+                    if (dReceive < dBill) {
+                        localCheckWarnings.push(`⛔ วันที่ตรวจรับพัสดุ (${getThaiDateString(dReceive)}) **ต้องไม่ก่อน** วันที่ในบิล/ใบเสร็จ (${getThaiDateString(dBill)})`);
+                    }
+
+                    // Check 3: Non-working days
+                    if (!isWorkingDay(dOrder)) {
+                        localCheckWarnings.push(`⚠️ วันที่อนุมัติ (${getThaiDateString(dOrder)}) **เป็นวันหยุด** (เสาร์/อาทิตย์/นักขัตฤกษ์) ควรเลื่อนไปวันทำการถัดไป`);
+                    }
+                    if (!isWorkingDay(dReceive)) {
+                        localCheckWarnings.push(`⚠️ วันที่ตรวจรับ (${getThaiDateString(dReceive)}) **เป็นวันหยุด** (เสาร์/อาทิตย์/นักขัตฤกษ์) ควรปฏิบัติในวันทำการ`);
+                    }
+                    
+                    const workingDayStatus = [];
+                    if (!isWorkingDay(dOrder)) workingDayStatus.push(`วันที่อนุมัติจัดซื้อ: ${dateOrderInput} (เป็นวันหยุด)`);
+                    if (!isWorkingDay(dBill)) workingDayStatus.push(`วันที่ในบิล/ใบเสร็จ: ${dateBillInput} (เป็นวันหยุด)`);
+                    if (!isWorkingDay(dReceive)) workingDayStatus.push(`วันที่ตรวจรับพัสดุ: ${dateReceiveInput} (เป็นวันหยุด)`);
+
+                    let workingDayInfo = localCheckWarnings.length > 0 ? 
+                        `ข้อแนะนำจากระบบ: ${localCheckWarnings.join('\n\n')} \n\n` : '';
+                    
+                    workingDayInfo += `โปรดวิเคราะห์ความสอดคล้องของลำดับวัน และพิจารณาว่าวันต่อไปนี้เป็นวันหยุด (ต้องพิจารณาเลื่อนวันทำการตามระเบียบ): ${workingDayStatus.join(', ')}`;
+
+                    userQuery = `วิเคราะห์และให้คำแนะนำเกี่ยวกับการลงวันที่ในเอกสารพัสดุตามระเบียบ โดยมีวันที่สำคัญดังนี้: 
+                        1. วันที่อนุมัติจัดซื้อจัดจ้าง: ${dateOrderInput}, 
+                        2. วันที่ในบิล/ใบเสร็จ (หลักฐานการรับรองหนี้): ${dateBillInput}, 
+                        3. วันที่ตรวจรับพัสดุ: ${dateReceiveInput}. 
+                        ข้อมูลการตรวจสอบวันหยุด/ความสอดคล้องเบื้องต้น: ${workingDayInfo}.
+                        กรุณาแจ้งเตือนหากมีวันที่ที่ไม่สอดคล้องกันตามหลักการพัสดุ และระบุประเด็นเรื่องวันหยุดให้ชัดเจน โดยใช้เครื่องหมาย **เน้นข้อความ** ในคำตอบของคุณสำหรับประเด็นสำคัญ`;
+                    break;
+                default:
+                    validationMessage = 'โหมดการทำงานไม่ถูกต้อง';
+            }
+
+            // 2. Execution or Error Display
+            if (validationMessage) {
+                setOutput(`<span class="font-bold text-red-600">⚠ การตรวจสอบข้อมูล:</span> ${validationMessage}`, true);
+                return;
+            }
+
+            callGeminiAPI(userQuery, buttonId);
+        }
+
+        // --- Event Listeners and Setup ---
+        function setupEventListeners() {
+            // Tab Clicking
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => changeTab(tab.dataset.tab));
+                
+                // Tab Keyboard Navigation (Enter/Space)
+                tab.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        changeTab(tab.dataset.tab);
+                    }
+                });
+            });
+
+            // Submit Buttons
+            document.getElementById('qa-submit').addEventListener('click', () => submitQueryDebounced('qa'));
+            document.getElementById('formal-submit').addEventListener('click', () => submitQueryDebounced('formal'));
+            document.getElementById('justify-submit').addEventListener('click', () => submitQueryDebounced('justify'));
+            document.getElementById('tor-submit').addEventListener('click', () => submitQueryDebounced('tor'));
+            document.getElementById('date-submit').addEventListener('click', () => submitQueryDebounced('date'));
+            
+            // Justify Real-time Validation
+            document.querySelectorAll('.justify-input').forEach(input => {
+                input.addEventListener('blur', () => validateJustifyForm(false));
+                input.addEventListener('keyup', () => validateJustifyForm(false));
+            });
+            
+            // Date Real-time Holiday Check
+            document.querySelectorAll('.date-input').forEach(input => {
+                input.addEventListener('change', handleDateInputChange);
+            });
+            
+            // Template Buttons
+            document.getElementById('justify-template').addEventListener('click', fillJustifyTemplate);
+            document.getElementById('tor-template').addEventListener('click', fillTorTemplate);
+            
+            // Copy/Download buttons
+            copyButton.addEventListener('click', copyToClipboard);
+            downloadButton.addEventListener('click', downloadTxt);
+        }
+
+        window.onload = function() {
+            // Load Active Tab from localStorage
+            const savedTab = localStorage.getItem('activeTab') || 'qa';
+            changeTab(savedTab);
+            setupEventListeners();
+        };
+    </script>
+</body>
+</html>
