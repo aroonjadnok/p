@@ -168,9 +168,9 @@
     </div>
 
     <script>
-        // กำหนด API Key สำหรับการเรียกใช้ Gemini API
-        const apiKey = "AIzaSyDV23aM77IIpDdw3cMQhuC2wFyBHiNUQCA"; 
-        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent";
+        // *** สำคัญ: ต้องแทนที่ YOUR_OPENAI_API_KEY_HERE ด้วย Key ของคุณเองก่อนใช้งาน ***
+        const apiKey = "YOUR_OPENAI_API_KEY_HERE"; 
+        const API_URL = "https://api.openai.com/v1/chat/completions";
         
         // System Instruction ที่กำหนดบทบาทและความรับผิดชอบอย่างชัดเจน
         const SYSTEM_INSTRUCTION = `
@@ -214,9 +214,14 @@
             });
         });
 
-        // ฟังก์ชันหลักในการส่งคำขอไปยัง Gemini API
+        // ฟังก์ชันหลักในการส่งคำขอไปยัง OpenAI API 
         async function callGeminiAPI(userQuery, buttonId) {
-            // FIX: Identify the span element and its parent button element correctly.
+            // Check for placeholder key
+            if (apiKey === "YOUR_OPENAI_API_KEY_HERE") {
+                outputBox.innerHTML = '<span class="text-red-600 font-bold">⚠️ ข้อผิดพลาดด้านความปลอดภัย: กรุณาแทนที่ "YOUR_OPENAI_API_KEY_HERE" ในโค้ดด้วย OpenAI API Key ของคุณเองก่อนใช้งาน</span>';
+                return;
+            }
+
             const spanElement = document.getElementById(buttonId);
             if (!spanElement || !spanElement.parentElement) {
                 console.error("Could not find button elements for disabling.");
@@ -232,12 +237,14 @@
             buttonElement.disabled = true; // Use buttonElement for disabled property
             spanElement.textContent = 'กำลังประมวลผล...'; // Use spanElement for text
 
+            // Payload สำหรับ OpenAI Chat Completions API
             const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-                generationConfig: {
-                    temperature: 0.3, // เน้นความแม่นยำและเป็นทางการ
-                },
+                model: "gpt-3.5-turbo", // ใช้โมเดลมาตรฐานของ OpenAI
+                messages: [
+                    { role: "system", content: SYSTEM_INSTRUCTION },
+                    { role: "user", content: userQuery }
+                ],
+                temperature: 0.3, // เน้นความแม่นยำและเป็นทางการ
             };
 
             let result = null;
@@ -247,13 +254,18 @@
 
             while (retries < MAX_RETRIES && !success) {
                 try {
-                    const response = await fetch(`${API_URL}?key=${apiKey}`, {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}` // การยืนยันตัวตนด้วย Bearer Token
+                        },
                         body: JSON.stringify(payload)
                     });
 
                     if (!response.ok) {
+                        const errorBody = await response.text();
+                        console.error(`HTTP error! status: ${response.status}. Body: ${errorBody}`);
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
 
@@ -276,13 +288,16 @@
             buttonElement.disabled = false; // Use buttonElement
             spanElement.textContent = originalButtonText; // Use spanElement
 
-            // 3. แสดงผลลัพธ์
-            if (success && result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
-                const responseText = result.candidates[0].content.parts[0].text;
+            // 3. แสดงผลลัพธ์ (ปรับการดึงข้อความตามโครงสร้างของ OpenAI)
+            const responseText = (success && result.choices && result.choices.length > 0 && result.choices[0].message && result.choices[0].message.content)
+                                 ? result.choices[0].message.content
+                                 : null;
+            
+            if (responseText) {
                 outputBox.innerHTML = responseText;
             } else {
-                outputBox.innerHTML = '<span class="text-red-600 font-bold">⚠️ ข้อผิดพลาด: ไม่สามารถรับคำตอบจากระบบได้ กรุณาลองใหม่อีกครั้ง หรือตรวจสอบความถูกต้องของข้อมูลที่ป้อน</span>';
-                console.error("Gemini API call failed or returned an unexpected format.");
+                outputBox.innerHTML = '<span class="text-red-600 font-bold">⚠️ ข้อผิดพลาด: ไม่สามารถรับคำตอบจากระบบได้ กรุณาลองใหม่อีกครั้ง หรือตรวจสอบ Key และข้อมูลที่ป้อน</span>';
+                console.error("OpenAI API call failed or returned an unexpected format.");
             }
         }
 
