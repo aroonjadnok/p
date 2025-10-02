@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ผู้ช่วยงานพัสดุโรงเรียน</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            border-bottom: 4px solid #10b981; /* Emerald 500 */
+            color: #10b981;
+            font-weight: 600;
+        }
+        .main-card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 font-sans">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-2">ผู้ช่วยงานพัสดุโรงเรียน</h1>
+            <p class="text-lg text-gray-500">ผู้เชี่ยวชาญด้านระเบียบการเงินการคลังของรัฐ พ.ศ. 2562 และงานพัสดุในสถานศึกษา</p>
+        </header>
+
+        <main class="bg-white rounded-xl main-card overflow-hidden">
+            <!-- Tab Navigation -->
+            <nav class="flex border-b border-gray-200 overflow-x-auto">
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-500 whitespace-nowrap" data-tab="qa">1. ถาม-ตอบ ระเบียบพัสดุ</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-500 whitespace-nowrap" data-tab="formal">2. ปรับภาษาเป็นทางการ</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-500 whitespace-nowrap" data-tab="justify">3. สร้างเหตุผลการจัดซื้อ/จ้าง</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-500 whitespace-nowrap" data-tab="tor">4. สร้าง TOR</button>
+                <button class="tab-button p-4 text-sm md:text-base text-gray-600 hover:text-emerald-500 whitespace-nowrap" data-tab="date">5. คู่มือการลงวันที่</button>
+            </nav>
+
+            <!-- Tab Content -->
+            <div id="tab-content" class="p-6 md:p-8">
+
+                <!-- 1. ถาม-ตอบ ระเบียบพัสดุ (Default) -->
+                <div id="qa-tab" class="tab-pane">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">1. ถาม-ตอบ ระเบียบพัสดุ (อ้างอิงระเบียบ พ.ศ. 2562)</h2>
+                    <textarea id="qa-input" class="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-gray-700" placeholder="ตัวอย่าง: การจัดซื้อพัสดุวงเงิน 5,000 บาท ต้องใช้วิธีใด และอ้างอิงระเบียบข้อใด"></textarea>
+                    <button onclick="submitQuery('qa')" class="w-full bg-emerald-500 text-white py-3 mt-4 rounded-lg hover:bg-emerald-600 transition duration-200 font-bold shadow-md">
+                        <span id="qa-button-text">ส่งคำถามและรับคำปรึกษา</span>
+                    </button>
+                </div>
+
+                <!-- 2. ปรับภาษาเป็นทางการ -->
+                <div id="formal-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">2. ปรับภาษาเป็นทางการ (สำหรับเอกสารราชการ)</h2>
+                    <p class="text-gray-500 mb-4">ใส่ข้อความที่คุณต้องการปรับเป็นภาษาราชการ (เช่น บันทึกคร่าวๆ, รายงานปากเปล่า)</p>
+                    <textarea id="formal-input" class="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-gray-700" placeholder="ตัวอย่าง: คอมพิวเตอร์เสีย ใช้งานไม่ได้มาหลายเดือนแล้ว ต้องซื้อเครื่องใหม่มาให้ครูใช้สอนนักเรียนให้ทันเทอมหน้า"></textarea>
+                    <button onclick="submitQuery('formal')" class="w-full bg-emerald-500 text-white py-3 mt-4 rounded-lg hover:bg-emerald-600 transition duration-200 font-bold shadow-md">
+                        <span id="formal-button-text">ปรับแต่งข้อความเป็นทางการ</span>
+                    </button>
+                </div>
+
+                <!-- 3. สร้างเหตุผลการจัดซื้อ/จ้าง -->
+                <div id="justify-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">3. สร้างเหตุผลความจำเป็นในการจัดซื้อจัดจ้าง</h2>
+                    <div class="space-y-4 text-gray-700">
+                        <div>
+                            <label for="justify-problem" class="block font-medium mb-1">สภาพปัญหา/ความจำเป็น:</label>
+                            <input type="text" id="justify-problem" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น เครื่องถ่ายเอกสารเก่าชำรุดบ่อย">
+                        </div>
+                        <div>
+                            <label for="justify-effect" class="block font-medium mb-1">ผลกระทบที่เกิดขึ้น:</label>
+                            <input type="text" id="justify-effect" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น ทำให้งานสารบรรณล่าช้าและสิ้นเปลืองค่าซ่อมแซม">
+                        </div>
+                        <div>
+                            <label for="justify-item" class="block font-medium mb-1">รายการที่ต้องการจัดซื้อ/จ้าง:</label>
+                            <input type="text" id="justify-item" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น เครื่องถ่ายเอกสารระบบดิจิทัลความเร็วสูง">
+                        </div>
+                        <div>
+                            <label for="justify-objective" class="block font-medium mb-1">วัตถุประสงค์ของการดำเนินการ:</label>
+                            <input type="text" id="justify-objective" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น เพื่อเพิ่มประสิทธิภาพและความรวดเร็วในการปฏิบัติงานของเจ้าหน้าที่">
+                        </div>
+                        <div>
+                            <label for="justify-benefit" class="block font-medium mb-1">ประโยชน์ที่คาดว่าจะได้รับ:</label>
+                            <input type="text" id="justify-benefit" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น ประหยัดงบประมาณซ่อมบำรุงและเพิ่มความคล่องตัวในการบริการ">
+                        </div>
+                    </div>
+                    <button onclick="submitQuery('justify')" class="w-full bg-emerald-500 text-white py-3 mt-6 rounded-lg hover:bg-emerald-600 transition duration-200 font-bold shadow-md">
+                        <span id="justify-button-text">สร้างเหตุผลความจำเป็น</span>
+                    </button>
+                </div>
+
+                <!-- 4. สร้าง TOR -->
+                <div id="tor-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">4. สร้างขอบเขตของงาน (TOR) ที่ครบถ้วน</h2>
+                    <p class="text-gray-500 mb-4">ระบุรายละเอียดหลักเพื่อสร้าง TOR ที่ถูกต้องตามระเบียบ</p>
+                    <div class="space-y-4 text-gray-700">
+                        <div>
+                            <label for="tor-type" class="block font-medium mb-1">ประเภท TOR:</label>
+                            <select id="tor-type" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                                <option value="purchase">จัดซื้อ</option>
+                                <option value="hire">จ้างงาน/บริการ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tor-name" class="block font-medium mb-1">ชื่อโครงการ/รายการ (ระบุให้ชัดเจน):</label>
+                            <input type="text" id="tor-name" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น จัดซื้อเครื่องคอมพิวเตอร์แบบตั้งโต๊ะสำหรับห้องปฏิบัติการวิทยาศาสตร์">
+                        </div>
+                        <div>
+                            <label for="tor-detail" class="block font-medium mb-1">รายละเอียดทางเทคนิค/ขอบเขตงานคร่าวๆ:</label>
+                            <textarea id="tor-detail" class="w-full h-24 p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น สเปค CPU, RAM, หรือขอบเขตงานจ้างปรับปรุงภูมิทัศน์"></textarea>
+                        </div>
+                        <div>
+                            <label for="tor-quantity" class="block font-medium mb-1">ปริมาณ/จำนวนที่ต้องการ:</label>
+                            <input type="text" id="tor-quantity" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="เช่น จำนวน 10 ชุด หรือ ระยะเวลา 60 วัน">
+                        </div>
+                    </div>
+                    <button onclick="submitQuery('tor')" class="w-full bg-emerald-500 text-white py-3 mt-6 rounded-lg hover:bg-emerald-600 transition duration-200 font-bold shadow-md">
+                        <span id="tor-button-text">สร้าง TOR ฉบับสมบูรณ์</span>
+                    </button>
+                </div>
+                
+                <!-- 5. แนะนำเรื่องการลงวันที่ในเอกสารพัสดุ -->
+                <div id="date-tab" class="tab-pane hidden">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">5. คู่มือการลงวันที่ในเอกสารพัสดุ</h2>
+                    <p class="text-gray-500 mb-4">รับคำแนะนำเกี่ยวกับลำดับความถูกต้องของวันที่ในเอกสารพัสดุหลัก</p>
+                    <div class="space-y-4 text-gray-700">
+                        <div>
+                            <label for="date-order" class="block font-medium mb-1">วันที่อนุมัติจัดซื้อจัดจ้าง:</label>
+                            <input type="date" id="date-order" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label for="date-bill" class="block font-medium mb-1">วันที่ในบิล/ใบเสร็จ (หลักฐานการรับรองหนี้):</label>
+                            <input type="date" id="date-bill" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label for="date-receive" class="block font-medium mb-1">วันที่ตรวจรับพัสดุ:</label>
+                            <input type="date" id="date-receive" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                        </div>
+                    </div>
+                    <button onclick="submitQuery('date')" class="w-full bg-emerald-500 text-white py-3 mt-6 rounded-lg hover:bg-emerald-600 transition duration-200 font-bold shadow-md">
+                        <span id="date-button-text">ตรวจสอบความสอดคล้องของวันที่</span>
+                    </button>
+                </div>
+
+
+                <!-- Output Section -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">ผลลัพธ์จากผู้ช่วยงานพัสดุ</h2>
+                    <div id="output-box" class="min-h-[150px] p-4 bg-gray-100 border border-gray-300 rounded-lg text-gray-800 whitespace-pre-wrap leading-relaxed">
+                        <p class="text-gray-500">เลือกเมนูและใส่ข้อมูลเพื่อเริ่มต้นการใช้งาน</p>
+                    </div>
+                    <div id="loading-indicator" class="hidden text-center mt-4">
+                        <div class="inline-block animate-spin rounded-full h-6 w-6 border-4 border-t-4 border-emerald-500 border-t-transparent"></div>
+                        <p class="text-emerald-600 mt-2">กำลังประมวลผลตามระเบียบ... โปรดรอสักครู่</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // กำหนด API Key สำหรับการเรียกใช้ Gemini API
+        const apiKey = "AIzaSyDV23aM77IIpDdw3cMQhuC2wFyBHiNUQCA"; 
+        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent";
+        
+        // System Instruction ที่กำหนดบทบาทและความรับผิดชอบอย่างชัดเจน
+        const SYSTEM_INSTRUCTION = `
+            คุณคือผู้ช่วยงานพัสดุโรงเรียนที่มีความเชี่ยวชาญในระเบียบการเงินการคลังของรัฐ พ.ศ. 2562 และระเบียบที่เกี่ยวข้องทั้งหมด รวมถึงคู่มือการปปฏิบัติงานพัสดุในสถานศึกษา หน้าที่ของคุณคือการช่วยเหลือผู้ใช้ใน 5 ประเด็นหลักดังนี้:
+
+            1. ตอบคำถามพัสดุ (QA): ตอบคำถามเกี่ยวกับระเบียบ ขั้นตอน แนวปฏิบัติ โดยต้องอ้างอิงระเบียบ/กฎหมายที่เกี่ยวข้อง (เช่น ระเบียบฯ พ.ศ. 2562 ข้อ...) อย่างชัดเจน หากไม่แน่ใจให้แนะนำผู้ใช้ให้ตรวจสอบกับหน่วยงานที่เกี่ยวข้อง
+            2. ปรับภาษาเป็นทางการ (Formal): ปรับข้อความที่ผู้ใช้ให้มาให้เป็นภาษาราชการที่ถูกต้องตามหลักภาษาไทย สุภาพ และเป็นทางการ เหมาะสำหรับเอกสารราชการ
+            3. เขียนสาเหตุการซื้อ/จ้าง (Justify): สร้างเหตุผลความจำเป็นในการจัดซื้อจัดจ้างที่ชัดเจน สมเหตุสมผล สอดคล้องกับภารกิจโรงเรียน โดยใช้รูปแบบ: 'เนื่องจาก [สภาพปัญหา/ความจำเป็น] ส่งผลให้ [ผลกระทบต่อการเรียนการสอน/การปฏิบัติงาน] โรงเรียนจึงมีความจำเป็นต้อง [จัดซื้อ/จัดจ้าง] [รายการ] เพื่อ [วัตถุประสงค์] ซึ่งจะส่งผลให้ [ประโยชน์ที่คาดว่าจะได้รับ]'
+            4. สร้าง TOR: สร้างขอบเขตของงาน (Terms of Reference) ที่ครบถ้วนตามรายการที่กำหนดสำหรับการจัดซื้อหรือการจ้างงาน และระบุว่าเป็นการจัดซื้อหรือจ้าง
+            5. แนะนำการลงวันที่ (Date): ให้คำแนะนำที่ถูกต้องเกี่ยวกับลำดับความสอดคล้องของวันที่ในเอกสารพัสดุ (วันที่อนุมัติ, วันที่ในบิล/ใบเสร็จ, วันที่ตรวจรับ) และแจ้งเตือนหากมีความไม่สอดคล้อง
+
+            ต้องปฏิบัติตามระเบียบอย่างเคร่งครัด โปร่งใส และรักษาผลประโยชน์ของทางราชการเสมอ
+        `;
+
+        // ตัวแปรสำหรับจัดการ UI
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        const outputBox = document.getElementById('output-box');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        
+        // ฟังก์ชันเปลี่ยน Tab
+        function changeTab(tabName) {
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.add('hidden'));
+
+            const activeTab = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+            const activePane = document.getElementById(`${tabName}-tab`);
+
+            if (activeTab) activeTab.classList.add('active');
+            if (activePane) activePane.classList.remove('hidden');
+
+            outputBox.innerHTML = '<p class="text-gray-500">เลือกเมนูและใส่ข้อมูลเพื่อเริ่มต้นการใช้งาน</p>';
+        }
+
+        // กำหนด tab แรกให้ Active
+        changeTab('qa');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                changeTab(tab.dataset.tab);
+            });
+        });
+
+        // ฟังก์ชันหลักในการส่งคำขอไปยัง Gemini API
+        async function callGeminiAPI(userQuery, buttonId) {
+            // FIX: Identify the span element and its parent button element correctly.
+            const spanElement = document.getElementById(buttonId);
+            if (!spanElement || !spanElement.parentElement) {
+                console.error("Could not find button elements for disabling.");
+                return;
+            }
+            const buttonElement = spanElement.parentElement; // This is the actual <button>
+            const originalButtonText = spanElement.textContent;
+
+
+            // 1. ตั้งค่าสถานะ Loading
+            outputBox.innerHTML = '';
+            loadingIndicator.classList.remove('hidden');
+            buttonElement.disabled = true; // Use buttonElement for disabled property
+            spanElement.textContent = 'กำลังประมวลผล...'; // Use spanElement for text
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+                generationConfig: {
+                    temperature: 0.3, // เน้นความแม่นยำและเป็นทางการ
+                },
+            };
+
+            let result = null;
+            let success = false;
+            let retries = 0;
+            const MAX_RETRIES = 3;
+
+            while (retries < MAX_RETRIES && !success) {
+                try {
+                    const response = await fetch(`${API_URL}?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    result = await response.json();
+                    success = true;
+
+                } catch (error) {
+                    console.error(`Attempt ${retries + 1} failed:`, error);
+                    retries++;
+                    if (retries < MAX_RETRIES) {
+                        // Exponential backoff: 1s, 2s, 4s delay
+                        const delay = Math.pow(2, retries) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+            
+            // 2. ปิดสถานะ Loading
+            loadingIndicator.classList.add('hidden');
+            buttonElement.disabled = false; // Use buttonElement
+            spanElement.textContent = originalButtonText; // Use spanElement
+
+            // 3. แสดงผลลัพธ์
+            if (success && result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
+                const responseText = result.candidates[0].content.parts[0].text;
+                outputBox.innerHTML = responseText;
+            } else {
+                outputBox.innerHTML = '<span class="text-red-600 font-bold">⚠️ ข้อผิดพลาด: ไม่สามารถรับคำตอบจากระบบได้ กรุณาลองใหม่อีกครั้ง หรือตรวจสอบความถูกต้องของข้อมูลที่ป้อน</span>';
+                console.error("Gemini API call failed or returned an unexpected format.");
+            }
+        }
+
+        // ฟังก์ชันรวบรวมข้อมูลและส่งคำขอตาม Tab
+        function submitQuery(mode) {
+            let userQuery = '';
+            let buttonId = '';
+
+            switch (mode) {
+                case 'qa':
+                    userQuery = `คำถามระเบียบพัสดุ: ${document.getElementById('qa-input').value.trim()}`;
+                    buttonId = 'qa-button-text';
+                    if (document.getElementById('qa-input').value.trim() === '') {
+                        outputBox.innerHTML = '<span class="text-red-600">กรุณาใส่คำถามเกี่ยวกับงานพัสดุที่ต้องการสอบถาม</span>';
+                        return;
+                    }
+                    break;
+
+                case 'formal':
+                    userQuery = `ปรับปรุงข้อความต่อไปนี้ให้เป็นภาษาราชการอย่างสมบูรณ์: "${document.getElementById('formal-input').value.trim()}"`;
+                    buttonId = 'formal-button-text';
+                    if (document.getElementById('formal-input').value.trim() === '') {
+                        outputBox.innerHTML = '<span class="text-red-600">กรุณาใส่ข้อความคร่าวๆ ที่ต้องการปรับเป็นทางการ</span>';
+                        return;
+                    }
+                    break;
+
+                case 'justify':
+                    const problem = document.getElementById('justify-problem').value.trim();
+                    const effect = document.getElementById('justify-effect').value.trim();
+                    const item = document.getElementById('justify-item').value.trim();
+                    const objective = document.getElementById('justify-objective').value.trim();
+                    const benefit = document.getElementById('justify-benefit').value.trim();
+                    
+                    if (!problem || !effect || !item || !objective || !benefit) {
+                        outputBox.innerHTML = '<span class="text-red-600">กรุณากรอกข้อมูลให้ครบถ้วนทุกช่องเพื่อสร้างเหตุผลความจำเป็น</span>';
+                        return;
+                    }
+
+                    userQuery = `สร้างเหตุผลความจำเป็นในการจัดซื้อจัดจ้างตามข้อมูลนี้: สภาพปัญหา=${problem}, ผลกระทบ=${effect}, รายการ=${item}, วัตถุประสงค์=${objective}, ประโยชน์=${benefit}`;
+                    buttonId = 'justify-button-text';
+                    break;
+                
+                case 'tor':
+                    const torType = document.getElementById('tor-type').value;
+                    const torName = document.getElementById('tor-name').value.trim();
+                    const torDetail = document.getElementById('tor-detail').value.trim();
+                    const torQuantity = document.getElementById('tor-quantity').value.trim();
+
+                    if (!torName || !torDetail || !torQuantity) {
+                        outputBox.innerHTML = '<span class="text-red-600">กรุณากรอก ชื่อโครงการ/รายการ, รายละเอียด/ขอบเขต และ ปริมาณ/จำนวน ให้ครบถ้วน</span>';
+                        return;
+                    }
+
+                    const torModeText = torType === 'purchase' ? 'จัดซื้อ' : 'จ้างงาน';
+                    userQuery = `สร้างขอบเขตของงาน (TOR) สำหรับการ${torModeText} โดยมีข้อมูลดังนี้: ชื่อโครงการ/รายการ: ${torName}, รายละเอียด/ขอบเขตงาน: ${torDetail}, ปริมาณ/จำนวน: ${torQuantity}. ต้องสร้างหัวข้อ TOR ให้ครบถ้วนตามรายการที่กำหนดสำหรับการ${torModeText} เท่านั้น`;
+                    buttonId = 'tor-button-text';
+                    break;
+
+                case 'date':
+                    const dateOrder = document.getElementById('date-order').value;
+                    const dateBill = document.getElementById('date-bill').value;
+                    const dateReceive = document.getElementById('date-receive').value;
+
+                    if (!dateOrder || !dateBill || !dateReceive) {
+                        outputBox.innerHTML = '<span class="text-red-600">กรุณากรอกวันที่ให้ครบถ้วนทั้ง 3 ช่อง เพื่อรับการตรวจสอบความสอดคล้อง</span>';
+                        return;
+                    }
+
+                    userQuery = `วิเคราะห์และให้คำแนะนำเกี่ยวกับการลงวันที่ในเอกสารพัสดุตามระเบียบ โดยมีวันที่สำคัญดังนี้: วันที่อนุมัติจัดซื้อจัดจ้าง: ${dateOrder}, วันที่ในบิล/ใบเสร็จ: ${dateBill}, วันที่ตรวจรับพัสดุ: ${dateReceive}. แจ้งเตือนหากมีวันที่ที่ไม่สอดคล้องกันตามหลักการพัสดุ`;
+                    buttonId = 'date-button-text';
+                    break;
+
+                default:
+                    outputBox.innerHTML = '<span class="text-red-600">โหมดการทำงานไม่ถูกต้อง</span>';
+                    return;
+            }
+
+            callGeminiAPI(userQuery, buttonId);
+        }
+
+    </script>
+</body>
+</html>
